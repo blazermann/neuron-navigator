@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>NeurON Навигатор | Платформы для обучения нейросетям</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #4895ef;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #adb5bd;
+            --success: #28a745;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: #f5f9ff;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+        
+        .dict-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .dict-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        /* Стили для теста */
+        .test-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-left: 5px solid var(--accent);
+        }
+        
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+        
+        .test-header h3 {
+            margin: 0;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .test-toggle {
+            background: var(--light);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--primary);
+        }
+        
+        .test-questions {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .test-questions.active {
+            display: block;
+        }
+        
+        .question {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .question p {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-left: 20px;
+        }
+        
+        .options label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        
+        .test-result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f7ff;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .test-result.show {
+            display: block;
+        }
+        
+        .test-result h4 {
+            margin: 0 0 10px 0;
+            color: var(--primary);
+        }
+        
+        .btn-small {
+            padding: 8px 20px;
+            font-size: 0.9rem;
+            background: var(--success);
+        }
+        
+        .btn-small:hover {
+            background: #1e7e34;
+        }
+        
+        .filter-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 40px;
+        }
+        
+        .filter-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        .filter-group label i {
+            margin-right: 10px;
+            color: var(--primary);
+        }
+        
+        .filter-group select {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: var(--light);
+            font-size: 1rem;
+        }
+        
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        .btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 20px auto 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin: 40px 0 30px;
+            color: var(--secondary);
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+        
+        .platform-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .platform-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+            border: 1px solid #eee;
+            position: relative;
+        }
+        
+        .platform-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.12);
+        }
+        
+        .platform-checkbox {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 2;
+        }
+        
+        .platform-checkbox input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .platform-header {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-top: 0;
+        }
+        
+        .platform-body {
+            padding: 25px;
+        }
+        
+        .platform-feature {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: flex-start;
+        }
+        
+        .platform-feature i {
+            color: var(--primary);
+            margin-right: 10px;
+            min-width: 20px;
+            margin-top: 4px;
+        }
+        
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .progress-fill {
+            background: var(--primary);
+            height: 100%;
+            border-radius: 10px;
+            width: 0%;
+        }
+        
+        .platform-footer {
+            padding: 0 25px 25px;
+            text-align: center;
+        }
+        
+        .action-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 15px;
+            margin: 30px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        
+        .no-results i {
+            font-size: 4rem;
+            color: var(--gray);
+            margin-bottom: 20px;
+        }
+        
+        .no-results h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+        
+        .no-results p {
+            color: var(--gray);
+            margin-bottom: 20px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            background: var(--dark);
+            color: white;
+            margin-top: 50px;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            max-width: 95%;
+            width: 1100px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.2);
+        }
+        
+        .modal-close {
+            position: sticky;
+            top: 0;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--gray);
+            background: white;
+            padding: 0 10px;
+            z-index: 10;
+        }
+        
+        .modal-close:hover {
+            color: var(--dark);
+        }
+        
+        /* Улучшенная таблица сравнения с горизонтальной прокруткой */
+        .compare-wrapper {
+            overflow-x: auto;
+            margin-top: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 600px;
+        }
+        
+        .compare-table th,
+        .compare-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+            word-break: break-word;
+        }
+        
+        .compare-table th {
+            background: linear-gradient(135deg, #f8f9ff, #f0f4ff);
+            font-weight: 700;
+            color: var(--secondary);
+            position: sticky;
+            top: 0;
+            border-bottom: 2px solid var(--accent);
+        }
+        
+        .compare-table tr:hover td {
+            background-color: #f8faff;
+        }
+        
+        .compare-table tr:nth-child(even) td {
+            background-color: #fcfcfd;
+        }
+        
+        .compare-table td:first-child,
+        .compare-table th:first-child {
+            position: sticky;
+            left: 0;
+            background-color: inherit;
+            font-weight: 600;
+            background: #fefefe;
+        }
+        
+        @media (max-width: 768px) {
+            .filter-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .platform-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .dict-btn {
+                position: static;
+                margin-top: 15px;
+                display: inline-block;
+            }
+            
+            .compare-table th,
+            .compare-table td {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-brain"></i> NeurON Навигатор</h1>
+            <p>Подбор лучших платформ для изучения нейросетей, глубокого обучения и искусственного интеллекта</p>
+            <button id="dictBtn" class="dict-btn"><i class="fas fa-book-open"></i> Словарь терминов</button>
+        </header>
+
+        <!-- Блок теста для определения уровня -->
+        <section class="test-section">
+            <div class="test-header" id="testHeader">
+                <h3><i class="fas fa-clipboard-list"></i> Пройдите мини-тест: узнайте свой уровень в нейросетях</h3>
+                <button class="test-toggle" id="testToggleBtn">Показать тест ▼</button>
+            </div>
+            <div id="testQuestions" class="test-questions">
+                <form id="levelTest">
+                    <div class="question">
+                        <p>1. Что такое функция активации в нейроне?</p>
+                        <div class="options">
+                            <label><input type="radio" name="q1" value="0"> Способ инициализации весов</label>
+                            <label><input type="radio" name="q1" value="1"> Преобразование взвешенной суммы в выходной сигнал</label>
+                            <label><input type="radio" name="q1" value="0"> Алгоритм обратного распространения ошибки</label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <p>2. Для какой задачи лучше всего подходят сверточные нейросети (CNN)?</p>
+                        <div class="options">
+                            <label><input type="radio" name="q2" value="0"> Обработка текстов</label>
+                            <label><input type="radio" name="q2" value="1"> Обработка изображений и пространственных данных</label>
+                            <label><input type="radio" name="q2" value="0"> Генерация музыки</label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <p>3. Какой метод используется для обучения многослойных нейросетей?</p>
+                        <div class="options">
+                            <label><input type="radio" name="q3" value="0"> Метод k-ближайших соседей</label>
+                            <label><input type="radio" name="q3" value="1"> Алгоритм обратного распространения ошибки (backpropagation)</label>
+                            <label><input type="radio" name="q3" value="0"> Случайный лес</label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <p>4. Что такое градиентный спуск?</p>
+                        <div class="options">
+                            <label><input type="radio" name="q4" value="0"> Архитектура сети</label>
+                            <label><input type="radio" name="q4" value="1"> Метод оптимизации для минимизации функции потерь</label>
+                            <label><input type="radio" name="q4" value="0"> Функция активации</label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <p>5. Какой фреймворк является наиболее популярным для глубокого обучения?</p>
+                        <div class="options">
+                            <label><input type="radio" name="q5" value="0"> Bootstrap</label>
+                            <label><input type="radio" name="q5" value="0"> Django</label>
+                            <label><input type="radio" name="q5" value="1"> PyTorch / TensorFlow</label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <p>6. Что такое Fine-tuning в контексте нейросетей?</p>
+                        <div class="options">
+                            <label><input type="radio" name="q6" value="0"> Увеличение размера датасета</label>
+                            <label><input type="radio" name="q6" value="0"> Уменьшение количества слоев сети</label>
+                            <label><input type="radio" name="q6" value="1"> Дообучение предварительно обученной модели на новых данных</label>
+                        </div>
+                    </div>
+                </form>
+                <div style="display: flex; gap: 15px; justify-content: flex-end;">
+                    <button id="submitTest" class="btn">Узнать свой уровень</button>
+                    <button id="resetTest" class="btn" style="background: var(--gray);">Сбросить ответы</button>
+                </div>
+                <div id="testResult" class="test-result"></div>
+            </div>
+        </section>
+
+        <section class="filter-section">
+            <h2 class="section-title">Параметры подбора</h2>
+            <div class="filter-options">
+                <div class="filter-group">
+                    <label for="level"><i class="fas fa-user-graduate"></i> Ваш уровень:</label>
+                    <select id="level">
+                        <option value="any">Любой</option>
+                        <option value="beginner">Новичок (не знаю, с чего начать)</option>
+                        <option value="intermediate">Средний (понимаю основы, нужна практика)</option>
+                        <option value="advanced">Продвинутый (хочу углубленных знаний/исследований)</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="goal"><i class="fas fa-bullseye"></i> Цель обучения:</label>
+                    <select id="goal">
+                        <option value="any">Любая</option>
+                        <option value="employment">Трудоустройство</option>
+                        <option value="practice">Практика кодирования моделей</option>
+                        <option value="theory">Фундаментальные знания</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="budget"><i class="fas fa-wallet"></i> Бюджет:</label>
+                    <select id="budget">
+                        <option value="any">Любой</option>
+                        <option value="free">Бесплатно</option>
+                        <option value="paid">Платно</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="tech"><i class="fas fa-laptop-code"></i> Технологии / инструменты:</label>
+                    <select id="tech">
+                        <option value="any">Любые</option>
+                        <option value="cloud">Облачные вычисления / GPU</option>
+                        <option value="jupyter">Jupyter Notebook / Colab</option>
+                        <option value="gpu">Доступ к GPU</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="format"><i class="fas fa-chalkboard-user"></i> Формат обучения:</label>
+                    <select id="format">
+                        <option value="any">Любой</option>
+                        <option value="self">Самостоятельно</option>
+                        <option value="mentor">С ментором / код-ревью</option>
+                        <option value="intensive">Интенсив / проекты</option>
+                    </select>
+                </div>
+            </div>
+            <button id="applyFilters" class="btn btn-block">Подобрать платформы</button>
+        </section>
+
+        <div class="action-bar">
+            <button id="compareBtn" class="btn"><i class="fas fa-code-branch"></i> Сравнить выбранные платформы</button>
+        </div>
+
+        <h2 class="section-title">Платформы для обучения нейросетям</h2>
+        <section id="platformsSection">
+            <div class="platform-cards">
+                <!-- Карточки генерируются скриптом -->
+            </div>
+        </section>
+        
+        <footer>
+            <p>© 2025 NeurON Навигатор | Версия 2.0 — только нейросети | Разработано в рамках дипломной работы</p>
+            <p>Забайкальский государственный университет</p>
+        </footer>
+    </div>
+
+    <!-- Модальное окно для сравнения -->
+    <div id="compareModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h3><i class="fas fa-chart-simple"></i> Сравнение выбранных платформ (нейросети)</h3>
+            <div id="compareTableContainer" class="compare-wrapper"></div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для словаря -->
+    <div id="dictModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h3>Словарь терминов по нейросетям</h3>
+            <ul>
+                <li><strong>Нейронная сеть</strong> — вычислительная система, имитирующая структуру биологических нейронных сетей.</li>
+                <li><strong>Обучение с учителем</strong> — обучение на размеченных данных (вход-выход).</li>
+                <li><strong>Сверточная нейросеть (CNN)</strong> — архитектура для обработки изображений и пространственных данных.</li>
+                <li><strong>Рекуррентная нейросеть (RNN)</strong> — для работы с последовательностями (текст, временные ряды).</li>
+                <li><strong>Градиентный спуск</strong> — метод оптимизации для минимизации ошибки нейросети.</li>
+                <li><strong>Fine-tuning</strong> — дообучение предварительно обученной модели на новых данных.</li>
+                <li><strong>GAN (Generative Adversarial Network)</strong> — генеративно-состязательная сеть для создания новых данных.</li>
+                <li><strong>Реверс-инжиниринг ML</strong> — подход, при котором модели изучаются от готового кода к математике.</li>
+                <li><strong>Transformer</strong> — архитектура на основе механизма внимания, основа современных LLM.</li>
+                <li><strong>PyTorch / TensorFlow</strong> — основные фреймворки для глубокого обучения.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // База данных: только платформы для обучения нейросетям
+        const platforms = [
+            { id: 'yandex', name: 'Яндекс.Практикум', type: 'Специализированная', courses: ['Глубокое обучение', 'NLP', 'Computer Vision'], price: '90 000 руб.', technologies: ['TensorFlow', 'PyTorch', 'Облако'], employment: '74%', completionRate: '82%', format: ['mentor', 'intensive'], bestFor: ['Трудоустройство', 'Практика'], level: ['beginner', 'intermediate'], features: ['Менторская поддержка', 'Реальные проекты'], rating: 4.8, link: 'https://praktikum.yandex.ru/' },
+            { id: 'stepik', name: 'Stepik', type: 'МООК', courses: ['Нейронные сети и компьютерное зрение', 'Введение в ML'], price: 'Бесплатно', technologies: ['Python', 'Google Colab'], employment: 'Нет данных', completionRate: '45%', format: ['self'], bestFor: ['Практика', 'Теоретические знания'], level: ['beginner', 'intermediate'], features: ['Интерактивные задачи', 'Открытое сообщество'], rating: 4.5, link: 'https://stepik.org/' },
+            { id: 'coursera', name: 'Coursera', type: 'МООК', courses: ['Deep Learning Specialization', 'GANs', 'NLP'], price: '$49-79/курс', technologies: ['TensorFlow', 'Jupyter'], employment: 'Нет данных', completionRate: 'Нет данных', format: ['self'], bestFor: ['Теоретические знания'], level: ['beginner', 'intermediate', 'advanced'], features: ['Курсы от топ-вузов (Стэнфорд, DeepLearning.AI)'], rating: 4.7, link: 'https://www.coursera.org/' },
+            { id: 'netology', name: 'Нетология', type: 'Специализированная', courses: ['Data Scientist: нейронные сети', 'GAN', 'трансформеры'], price: '70 000 руб.', technologies: ['TensorFlow', 'GPU (NVIDIA)'], employment: '65%', completionRate: '68%', format: ['mentor', 'intensive'], bestFor: ['Трудоустройство'], level: ['intermediate', 'advanced'], features: ['Хакатоны с компаниями', 'Код-ревью'], rating: 4.6, link: 'https://netology.ru/' },
+            { id: 'geekbrains', name: 'GeekBrains', type: 'Специализированная', courses: ['Машинное обучение (нейросети)', 'Распознавание лиц'], price: '50 000 руб.', technologies: ['Kaggle', 'PyCharm', 'Jupyter'], employment: '58%', completionRate: '60%', format: ['mentor'], bestFor: ['Трудоустройство'], level: ['beginner', 'intermediate'], features: ['Групповые проекты', 'Портфолио на GitHub'], rating: 4.3, link: 'https://gb.ru/' },
+            { id: 'openedu', name: 'Открытое образование', type: 'МООК', courses: ['Глубокое обучение (МФТИ)', 'Нейронные сети и компьютерное зрение'], price: 'Бесплатно', technologies: ['OpenCV', 'Keras'], employment: 'Нет данных', completionRate: 'Нет данных', format: ['self'], bestFor: ['Теоретические знания'], level: ['intermediate', 'advanced'], features: ['Курсы от ведущих вузов РФ', 'Бесплатные сертификаты'], rating: 4.4, link: 'https://openedu.ru/' },
+            { id: 'skillbox', name: 'Skillbox', type: 'Специализированная', courses: ['Data Scientist', 'Python для нейросетей'], price: '80 000 руб.', technologies: ['Python', 'TensorFlow', 'Облачные сервера'], employment: '67%', completionRate: 'Нет данных', format: ['mentor', 'intensive'], bestFor: ['Трудоустройство'], level: ['beginner', 'intermediate'], features: ['Проектное обучение', 'Стажировки'], rating: 4.5, link: 'https://skillbox.ru/' },
+            { id: 'dls_mipt', name: 'Deep Learning School (МФТИ)', type: 'Академическая', courses: ['Основы глубокого обучения', 'CV', 'NLP', 'GAN'], price: 'Бесплатно', technologies: ['PyTorch', 'Jupyter'], employment: 'Нет данных', completionRate: 'Нет данных', format: ['self'], bestFor: ['Теоретические знания', 'Практика'], level: ['intermediate', 'advanced'], features: ['Курсы от МФТИ', 'Сертификаты'], rating: 4.9, link: 'https://dls.samcs.ru/' },
+            { id: 'senatorov', name: 'SENATOROVAI', type: 'Специализированная', courses: ['Data Science: от sklearn к математике', 'Реверс-инжиниринг ML'], price: 'По запросу', technologies: ['scikit-learn', 'Python'], employment: 'Нет данных', completionRate: 'Нет данных', format: ['mentor', 'intensive'], bestFor: ['Практика'], level: ['beginner', 'intermediate', 'advanced'], features: ['Подход от кода к математике', 'GitHub-портфолио'], rating: 4.8, link: 'https://github.com/SENATOROVAI' },
+            { id: 'udacity', name: 'Udacity', type: 'МООК (project-based)', courses: ['Deep Learning Nanodegree', 'Computer Vision'], price: '$399/мес', technologies: ['PyTorch', 'AWS', 'GPU'], employment: 'Партнерства с IBM, NVIDIA', completionRate: 'Нет данных', format: ['mentor', 'intensive'], bestFor: ['Трудоустройство', 'Практика'], level: ['intermediate', 'advanced'], features: ['Персональные менторы', 'Симуляторы реальных задач'], rating: 4.6, link: 'https://www.udacity.com/' },
+            { id: 'kaggle', name: 'Kaggle Learn', type: 'Микрообучение', courses: ['Intro to Deep Learning', 'Computer Vision', 'NLP'], price: 'Бесплатно', technologies: ['Kaggle GPU', 'TensorFlow', 'Pandas'], employment: 'Нет данных', completionRate: 'Нет данных', format: ['self'], bestFor: ['Практика'], level: ['beginner', 'intermediate'], features: ['Соревнования', 'Доступ к датасетам'], rating: 4.7, link: 'https://www.kaggle.com/learn' },
+            { id: 'fastai', name: 'fast.ai', type: 'Открытая платформа', courses: ['Practical Deep Learning', 'From Deep Learning Foundations'], price: 'Донации', technologies: ['PyTorch', 'fastai'], employment: 'Нет данных', completionRate: 'Нет данных', format: ['self'], bestFor: ['Практика'], level: ['intermediate', 'advanced'], features: ['Learning-by-doing', 'Сильное сообщество'], rating: 4.8, link: 'https://www.fast.ai/' },
+            { id: 'edx', name: 'edX', type: 'МООК', courses: ['Deep Learning (MIT, Harvard)', 'AI'], price: 'Бесплатный аудит / от $150 сертификат', technologies: ['Jupyter', 'Python'], employment: 'Нет данных', completionRate: 'Нет данных', format: ['self'], bestFor: ['Теоретические знания'], level: ['intermediate', 'advanced'], features: ['Курсы от MIT, Harvard', 'Виртуальные лаборатории'], rating: 4.6, link: 'https://www.edx.org/' }
+        ];
+
+        let selectedPlatforms = new Set();
+
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function closeModals() {
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        }
+
+        function renderPlatformCards(platformsToRender) {
+            const container = document.querySelector('.platform-cards');
+            container.innerHTML = '';
+            
+            if (platformsToRender.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-search"></i>
+                        <h3>Нет платформ, соответствующих выбранным параметрам</h3>
+                        <p>Попробуйте изменить критерии фильтрации — возможно, расширить бюджет, уровень подготовки или цель обучения.</p>
+                        <button class="btn" id="resetFiltersBtn">Сбросить фильтры</button>
+                    </div>
+                `;
+                const resetBtn = document.getElementById('resetFiltersBtn');
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', resetFilters);
+                }
+                return;
+            }
+            
+            platformsToRender.forEach(platform => {
+                let starsHtml = '';
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= Math.floor(platform.rating)) starsHtml += '<i class="fas fa-star rating-star filled"></i>';
+                    else if (i === Math.ceil(platform.rating) && !Number.isInteger(platform.rating)) starsHtml += '<i class="fas fa-star-half-alt rating-star filled"></i>';
+                    else starsHtml += '<i class="far fa-star rating-star"></i>';
+                }
+
+                let formatText = '';
+                if (platform.format.includes('self')) formatText += 'Самостоятельно, ';
+                if (platform.format.includes('mentor')) formatText += 'С ментором, ';
+                if (platform.format.includes('intensive')) formatText += 'Интенсив, ';
+                formatText = formatText.slice(0, -2) || 'Не указан';
+
+                let completionHtml = '';
+                if (platform.completionRate && platform.completionRate !== 'Нет данных') {
+                    let rate = parseInt(platform.completionRate);
+                    completionHtml = `<div class="progress-bar"><div class="progress-fill" style="width: ${rate}%;"></div></div><small>${platform.completionRate} завершают</small>`;
+                } else completionHtml = '<small>Нет данных</small>';
+
+                container.innerHTML += `
+                    <div class="platform-card">
+                        <div class="platform-checkbox"><input type="checkbox" data-id="${platform.id}" ${selectedPlatforms.has(platform.id) ? 'checked' : ''}></div>
+                        <div class="platform-header"><h3>${platform.name}</h3></div>
+                        <div class="platform-body">
+                            <div class="platform-feature"><i class="fas fa-graduation-cap"></i><div><strong>Тип:</strong> ${platform.type}</div></div>
+                            <div class="platform-feature"><i class="fas fa-brain"></i><div><strong>Курсы по нейросетям:</strong> ${platform.courses.join(', ')}</div></div>
+                            <div class="platform-feature"><i class="fas fa-ruble-sign"></i><div><strong>Стоимость:</strong> ${platform.price}</div></div>
+                            <div class="platform-feature"><i class="fas fa-laptop-code"></i><div><strong>Технологии / фреймворки:</strong> ${platform.technologies.join(', ')}</div></div>
+                            <div class="platform-feature"><i class="fas fa-briefcase"></i><div><strong>Трудоустройство:</strong> ${platform.employment}</div></div>
+                            <div class="platform-feature"><i class="fas fa-chart-line"></i><div><strong>Завершение курсов:</strong> ${completionHtml}</div></div>
+                            <div class="platform-feature"><i class="fas fa-chalkboard-user"></i><div><strong>Формат:</strong> ${formatText}</div></div>
+                            <div class="platform-feature"><i class="fas fa-star"></i><div><strong>Рейтинг:</strong> <div class="platform-rating">${starsHtml} ${platform.rating}</div></div></div>
+                        </div>
+                        <div class="platform-footer"><a href="${platform.link}" target="_blank" class="btn">Перейти на платформу</a></div>
+                    </div>`;
+            });
+
+            document.querySelectorAll('.platform-card input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', (e) => {
+                    const id = cb.getAttribute('data-id');
+                    if (cb.checked) selectedPlatforms.add(id);
+                    else selectedPlatforms.delete(id);
+                });
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById('level').value = 'any';
+            document.getElementById('goal').value = 'any';
+            document.getElementById('budget').value = 'any';
+            document.getElementById('tech').value = 'any';
+            document.getElementById('format').value = 'any';
+            renderPlatformCards(platforms);
+        }
+
+        function filterPlatforms() {
+            const level = document.getElementById('level').value;
+            const goal = document.getElementById('goal').value;
+            const budget = document.getElementById('budget').value;
+            const tech = document.getElementById('tech').value;
+            const format = document.getElementById('format').value;
+            
+            return platforms.filter(p => {
+                if (level !== 'any' && !p.level.includes(level)) return false;
+                if (goal !== 'any') {
+                    const goalMap = { employment: 'Трудоустройство', practice: 'Практика', theory: 'Теоретические знания' };
+                    if (!p.bestFor.includes(goalMap[goal])) return false;
+                }
+                if (budget !== 'any') {
+                    if (budget === 'free' && !p.price.toLowerCase().includes('бесплатно')) return false;
+                    if (budget === 'paid' && p.price.toLowerCase().includes('бесплатно')) return false;
+                }
+                if (tech !== 'any') {
+                    let hasTech = false;
+                    if (tech === 'cloud' && p.technologies.some(t => t.toLowerCase().includes('облак') || t.toLowerCase().includes('aws') || t.toLowerCase().includes('gpu'))) hasTech = true;
+                    if (tech === 'jupyter' && p.technologies.some(t => t.toLowerCase().includes('jupyter') || t.toLowerCase().includes('colab'))) hasTech = true;
+                    if (tech === 'gpu' && p.technologies.some(t => t.toLowerCase().includes('gpu'))) hasTech = true;
+                    if (!hasTech) return false;
+                }
+                if (format !== 'any') {
+                    let formatMatch = false;
+                    if (format === 'self' && p.format.includes('self')) formatMatch = true;
+                    if (format === 'mentor' && p.format.includes('mentor')) formatMatch = true;
+                    if (format === 'intensive' && p.format.includes('intensive')) formatMatch = true;
+                    if (!formatMatch) return false;
+                }
+                return true;
+            });
+        }
+
+        function showComparison() {
+            const selected = platforms.filter(p => selectedPlatforms.has(p.id));
+            if (selected.length === 0) { 
+                alert('Выберите хотя бы одну платформу (галочка на карточке)'); 
+                return; 
+            }
+            
+            const container = document.getElementById('compareTableContainer');
+            // Очищаем и создаём таблицу с обёрткой для горизонтальной прокрутки
+            let html = '<table class="compare-table"><thead><tr>';
+            // Заголовки — названия платформ
+            html += '<th>Характеристика</th>';
+            selected.forEach(p => {
+                html += `<th>${p.name}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+            
+            // Строки сравнения
+            const rows = [
+                { label: 'Тип', key: 'type' },
+                { label: 'Курсы по нейросетям', key: 'courses', transform: v => v.join(', ') },
+                { label: 'Стоимость', key: 'price' },
+                { label: 'Технологии / GPU', key: 'technologies', transform: v => v.join(', ') },
+                { label: 'Трудоустройство', key: 'employment' },
+                { label: 'Завершение курсов', key: 'completionRate' },
+                { label: 'Формат обучения', key: 'format', transform: v => v.map(f => f === 'self' ? 'Самостоятельно' : f === 'mentor' ? 'С ментором' : 'Интенсив').join(', ') },
+                { label: 'Ключевые особенности', key: 'features', transform: v => v.join(', ') },
+                { label: 'Рейтинг', key: 'rating' }
+            ];
+            
+            rows.forEach(row => {
+                html += '<tr>';
+                html += `<td><strong>${row.label}</strong></td>`;
+                selected.forEach(p => {
+                    let val = p[row.key];
+                    if (row.transform) val = row.transform(val);
+                    html += `<td>${val || 'Нет данных'}</td>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+            showModal('compareModal');
+        }
+
+        // Логика теста
+        function evaluateTest() {
+            const answers = {
+                q1: document.querySelector('input[name="q1"]:checked'),
+                q2: document.querySelector('input[name="q2"]:checked'),
+                q3: document.querySelector('input[name="q3"]:checked'),
+                q4: document.querySelector('input[name="q4"]:checked'),
+                q5: document.querySelector('input[name="q5"]:checked'),
+                q6: document.querySelector('input[name="q6"]:checked')
+            };
+            
+            for (let q in answers) {
+                if (!answers[q]) {
+                    alert('Пожалуйста, ответьте на все вопросы теста');
+                    return null;
+                }
+            }
+            
+            let score = 0;
+            score += parseInt(answers.q1.value);
+            score += parseInt(answers.q2.value);
+            score += parseInt(answers.q3.value);
+            score += parseInt(answers.q4.value);
+            score += parseInt(answers.q5.value);
+            score += parseInt(answers.q6.value);
+            
+            if (score <= 2) return 'beginner';
+            else if (score <= 4) return 'intermediate';
+            else return 'advanced';
+        }
+        
+        function applyTestResult() {
+            const level = evaluateTest();
+            if (!level) return;
+            
+            const levelSelect = document.getElementById('level');
+            levelSelect.value = level;
+            
+            let levelText = '';
+            if (level === 'beginner') levelText = 'Новичок (рекомендуем начать с основ)';
+            else if (level === 'intermediate') levelText = 'Средний (вам нужна глубокая практика)';
+            else levelText = 'Продвинутый (углублённые курсы и исследования)';
+            
+            const resultDiv = document.getElementById('testResult');
+            resultDiv.innerHTML = `
+                <h4><i class="fas fa-chart-line"></i> Ваш уровень: ${levelText}</h4>
+                <p>На основе ваших ответов мы рекомендуем установить фильтр «Уровень» на "${levelText}" и подобрать платформы.</p>
+                <button id="applyLevelBtn" class="btn btn-small">Применить рекомендуемый фильтр и обновить платформы</button>
+            `;
+            resultDiv.classList.add('show');
+            
+            const applyBtn = document.getElementById('applyLevelBtn');
+            if (applyBtn) {
+                applyBtn.addEventListener('click', () => {
+                    document.getElementById('level').value = level;
+                    const filtered = filterPlatforms();
+                    renderPlatformCards(filtered);
+                    resultDiv.innerHTML += '<p style="color: green; margin-top: 10px;">✓ Фильтр уровня применён! Платформы подобраны.</p>';
+                });
+            }
+        }
+        
+        function resetTest() {
+            document.querySelectorAll('#levelTest input[type="radio"]').forEach(radio => {
+                radio.checked = false;
+            });
+            document.getElementById('testResult').innerHTML = '';
+            document.getElementById('testResult').classList.remove('show');
+        }
+
+        function setupEventListeners() {
+            document.getElementById('applyFilters').addEventListener('click', () => {
+                const filtered = filterPlatforms();
+                renderPlatformCards(filtered);
+            });
+            document.getElementById('compareBtn').addEventListener('click', showComparison);
+            document.getElementById('dictBtn').addEventListener('click', () => showModal('dictModal'));
+            document.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', closeModals));
+            window.addEventListener('click', (e) => { if (e.target.classList.contains('modal')) closeModals(); });
+            
+            document.getElementById('submitTest').addEventListener('click', applyTestResult);
+            document.getElementById('resetTest').addEventListener('click', resetTest);
+            
+            const testToggle = document.getElementById('testToggleBtn');
+            const testQuestions = document.getElementById('testQuestions');
+            testToggle.addEventListener('click', () => {
+                if (testQuestions.classList.contains('active')) {
+                    testQuestions.classList.remove('active');
+                    testToggle.innerHTML = 'Показать тест ▼';
+                } else {
+                    testQuestions.classList.add('active');
+                    testToggle.innerHTML = 'Скрыть тест ▲';
+                }
+            });
+            testQuestions.classList.remove('active');
+            testToggle.innerHTML = 'Показать тест ▼';
+        }
+
+        function initApp() {
+            renderPlatformCards(platforms);
+            setupEventListeners();
+        }
+
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
